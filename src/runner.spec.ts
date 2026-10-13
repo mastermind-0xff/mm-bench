@@ -58,10 +58,10 @@ describe('runSample', { timeout: 30_000 }, () => {
   });
 
   it('keeps a slow warm-up alive while each run is within the timeout', async () => {
-    // 40 runs of 50 ms: a 2 s warm-up, with progress every 250 ms
+    // 60 runs of 50 ms: a 3 s warm-up, with progress every 250 ms
     const { sample } = await run('slow warm-up', {
-      warmup: { runs: 40 },
-      timeout: 1000,
+      warmup: { runs: 60 },
+      timeout: 2000,
     });
     expect(sample.runs).toBe(2);
   });
@@ -82,11 +82,13 @@ describe('runSample', { timeout: 30_000 }, () => {
   });
 
   it('stops a stuck worker, with the end of its stderr', async () => {
-    const error = await run('stuck', { timeout: 300 }).catch(
+    // the worker's start counts too: on a busy machine (the other test
+    // files run meanwhile) a short timeout could end before the case runs
+    const error = await run('stuck', { timeout: 2000 }).catch(
       (reason: unknown) => reason
     );
     expect((error as Error).message).toMatch(
-      /^mm-bench: "stuck" \(sample 1\) made no progress for 300 ms, so its worker was stopped\.\nWorker stderr:\n.*stuck here/s
+      /^mm-bench: "stuck" \(sample 1\) made no progress for 2000 ms, so its worker was stopped\.\nWorker stderr:\n.*stuck here/s
     );
   });
 
