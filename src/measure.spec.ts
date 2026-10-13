@@ -23,6 +23,10 @@ const config = (overrides: Partial<MeasureConfig> = {}): MeasureConfig => ({
 const sum = (values: readonly number[]): number =>
   values.reduce((total, value) => total + value, 0);
 
+const hasThreadCpuUsage =
+  typeof (process as { threadCpuUsage?: unknown }).threadCpuUsage ===
+  'function';
+
 /** A case that keeps the thread busy for `ms` milliseconds. */
 const busy = (ms: number) => (): number => {
   const end = performance.now() + ms;
@@ -110,11 +114,14 @@ describe('measure', () => {
       ticks.runs,
       ticks.innerTime,
       ticks.cpu,
-      ticks.threadCpu,
       ticks.rss,
       ticks.heapUsed,
     ])
       expect(column).toHaveLength(ticks.time.length);
+    // empty on Node versions without process.threadCpuUsage
+    expect(ticks.threadCpu).toHaveLength(
+      hasThreadCpuUsage ? ticks.time.length : 0
+    );
   });
 
   it('calls the function once, warms it up, then measures batches', async () => {

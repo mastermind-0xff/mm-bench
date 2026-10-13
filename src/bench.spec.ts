@@ -178,6 +178,9 @@ describe('end to end', { timeout: 60_000 }, () => {
 
   it('prints the report side by side', async () => {
     const { stdout } = await runFixture('reporter.js');
+    const hasThreadCpuUsage =
+      typeof (process as { threadCpuUsage?: unknown }).threadCpuUsage ===
+      'function';
     for (const text of [
       'mm-bench',
       'sample 1/2',
@@ -187,7 +190,9 @@ describe('end to end', { timeout: 60_000 }, () => {
       'slower',
       'Run time, % of runs',
       'Mean run time over the sample',
-      "Function's thread, % of a core",
+      hasThreadCpuUsage ?
+        "Function's thread, % of a core"
+      : "Function's thread: needs a Node version with process.threadCpuUsage",
       'All cores usage',
       'Delta heap, thread cost',
       'Total heap used',

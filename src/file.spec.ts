@@ -89,6 +89,18 @@ describe('resolveBenchFile', () => {
     expect(() => resolveBenchFile(script, 5 as never)).toThrow(TypeError);
   });
 
+  it('follows directory links before checking the root', () => {
+    // a junction needs no privileges on Windows; elsewhere it's a symlink
+    const away = join(base, 'away');
+    mkdirSync(away, { recursive: true });
+    writeFileSync(join(away, 'bench.js'), '');
+    const link = join(root, 'linked');
+    symlinkSync(away, link, 'junction');
+    expect(() => resolveBenchFile(join(link, 'bench.js'), root)).toThrow(
+      /outside the root/
+    );
+  });
+
   it('follows symlinks before checking the root', (context) => {
     const link = join(root, 'link.js');
     try {
