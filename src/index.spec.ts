@@ -64,7 +64,9 @@ describe('the package', () => {
 
   // the bundler once dropped `sink`, which nothing reads: see rollup.config.js
   it.each(modules)('keeps every export of %s.ts in the build', async (name) => {
-    const source = namesOf((await import(`./${name}.ts`)) as Exports);
+    const source = namesOf(
+      (await import(new URL(`./${name}.ts`, import.meta.url).href)) as Exports
+    );
     expect(namesOf(await esmOf(name))).toEqual(source);
     expect(namesOf(cjsOf(name))).toEqual(source);
   });
