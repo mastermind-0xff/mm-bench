@@ -98,7 +98,8 @@ export interface MeasureSettings {
   readonly batchSize?: number;
   /**
    * Subtract the timer's own cost from reported times. Each sample measures
-   * it before its warm-up, by timing empty runs the way runs are timed, and
+   * it before its warm-up, by timing empty runs of `batchSize` calls the way
+   * runs are timed (up to 5,000 runs or 50 ms), leaving out interrupts, and
    * reports it in `overhead`; histograms always keep the raw times, so this
    * only shifts the stats and the distribution. Default: `true`.
    */
@@ -113,9 +114,13 @@ export interface MeasureSettings {
    */
   readonly tickInterval?: number;
   /**
-   * Milliseconds a sample may go without finishing a run before its worker
-   * is stopped and the call rejects: catches endless loops and promises that
-   * never settle. Default: `60_000`.
+   * Milliseconds a sample may go without progress before its worker is
+   * stopped and the call rejects: catches endless loops and promises that
+   * never settle. Workers report progress between runs (calibration and
+   * warm-up included), four times per timeout at most every 250 ms, so a
+   * single run may take up to about three quarters of it. Running the bench
+   * file up to the call counts too: keep heavy setup within it. Default:
+   * `60_000`.
    */
   readonly timeout?: number;
 }
