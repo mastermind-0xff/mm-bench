@@ -183,8 +183,8 @@ export interface Bench {
  * `run` is called.
  *
  * ```ts
- * const v2 = bench('v2', () => sec2.b.u.red('Hello'));
- * const v1 = bench('v1', () => sec1.b.u.red('Hello'), { batchSize: 10 });
+ * const join = bench('join', () => words.join(' '));
+ * const max = bench('max', () => Math.max(...values), { batchSize: 100 });
  * ```
  */
 export type BenchFunction = (
@@ -200,8 +200,8 @@ export type BenchFunction = (
  * they are started together.
  *
  * ```ts
- * await compare(v2, v1);
- * await compare(v2, v1, { time: 10_000, output: false });
+ * await compare(join, reduce);
+ * await compare(join, reduce, { time: 10_000, output: false });
  * ```
  */
 export interface CompareFunction {
@@ -389,10 +389,10 @@ export interface DistributionOptions {
    * whole multiples of the timer's resolution per call, so no bucket is
    * empty because of the timer; when cases have different batch sizes, the
    * finest resolution is used and the coarser cases show gaps between the
-   * times their timer can tell apart. When that needs fewer buckets, the range is
-   * padded with empty ones to `buckets / k` for a whole `k`, so plotted in
-   * `buckets` columns each bucket is exactly `k` columns wide. Default:
-   * `30`.
+   * times their timer can tell apart. When that needs fewer buckets, the
+   * range is padded with empty ones to `buckets / k` for a whole `k`, so
+   * plotted in `buckets` columns each bucket is exactly `k` columns wide.
+   * Default: `30`.
    */
   readonly buckets?: number;
   /**
