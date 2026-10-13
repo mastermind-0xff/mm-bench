@@ -2,20 +2,21 @@
  * mm-bench: microbenchmarks with run time distributions.
  *
  * ```ts
- * // bench/style.js, run with `node bench/style.js`
+ * // bench/strings.js, run with `node bench/strings.js`
  * import { bench, compare } from 'mm-bench';
- * import { sec as sec2 } from '../dist/esm/index.js';
- * import { sec as sec1 } from 'style-escape-codes';
+ *
+ * // prepared at the top level: the workers run this file too
+ * const words = Array.from({ length: 50 }, (_, index) => `word${index}`);
  *
  * await compare(
- *   bench('v2', () => sec2.b.u.o.red('Hello')),
- *   bench('v1', () => sec1.b.u.o.red('Hello'))
+ *   bench('join', () => words.join(' ')),
+ *   bench('reduce', () => words.reduce((text, word) => `${text}${word} `, ''))
  * );
  *
  * // each call is its own comparison, measured after the previous one
  * const report = await compare(
- *   bench('v2 nested', () => sec2.red(`Hello ${sec2.blue('blue')} hello.`)),
- *   bench('v1 nested', () => sec1.red(`Hello ${sec1.blue('blue')} hello.`)),
+ *   bench('upper', () => words.map((word) => word.toUpperCase())),
+ *   bench('lower', () => words.map((word) => word.toLowerCase())),
  *   { runs: 1_000_000, output: false }
  * );
  * report.cases[0]?.histogram; // raw data

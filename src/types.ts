@@ -98,7 +98,8 @@ export interface MeasureSettings {
   readonly batchSize?: number;
   /**
    * Subtract the timer's own cost from reported times. Each sample measures
-   * it before its warm-up, by timing empty runs the way runs are timed, and
+   * it before its warm-up, by timing empty runs of `batchSize` calls the way
+   * runs are timed (up to 5,000 runs or 50 ms), leaving out interrupts, and
    * reports it in `overhead`; histograms always keep the raw times, so this
    * only shifts the stats and the distribution. Default: `true`.
    */
@@ -113,9 +114,13 @@ export interface MeasureSettings {
    */
   readonly tickInterval?: number;
   /**
-   * Milliseconds a sample may go without finishing a run before its worker
-   * is stopped and the call rejects: catches endless loops and promises that
-   * never settle. Default: `60_000`.
+   * Milliseconds a sample may go without progress before its worker is
+   * stopped and the call rejects: catches endless loops and promises that
+   * never settle. Workers report progress between runs (calibration and
+   * warm-up included), four times per timeout at most every 250 ms, so a
+   * single run may take up to about three quarters of it. Running the bench
+   * file up to the call counts too: keep heavy setup within it. Default:
+   * `60_000`.
    */
   readonly timeout?: number;
 }
@@ -178,8 +183,8 @@ export interface Bench {
  * `run` is called.
  *
  * ```ts
- * const v2 = bench('v2', () => sec2.b.u.red('Hello'));
- * const v1 = bench('v1', () => sec1.b.u.red('Hello'), { batchSize: 10 });
+ * const join = bench('join', () => words.join(' '));
+ * const max = bench('max', () => Math.max(...values), { batchSize: 100 });
  * ```
  */
 export type BenchFunction = (
@@ -195,8 +200,8 @@ export type BenchFunction = (
  * they are started together.
  *
  * ```ts
- * await compare(v2, v1);
- * await compare(v2, v1, { time: 10_000, output: false });
+ * await compare(join, reduce);
+ * await compare(join, reduce, { time: 10_000, output: false });
  * ```
  */
 export interface CompareFunction {
@@ -384,10 +389,10 @@ export interface DistributionOptions {
    * whole multiples of the timer's resolution per call, so no bucket is
    * empty because of the timer; when cases have different batch sizes, the
    * finest resolution is used and the coarser cases show gaps between the
-   * times their timer can tell apart. When that needs fewer buckets, the range is
-   * padded with empty ones to `buckets / k` for a whole `k`, so plotted in
-   * `buckets` columns each bucket is exactly `k` columns wide. Default:
-   * `30`.
+   * times their timer can tell apart. When that needs fewer buckets, the
+   * range is padded with empty ones to `buckets / k` for a whole `k`, so
+   * plotted in `buckets` columns each bucket is exactly `k` columns wide.
+   * Default: `30`.
    */
   readonly buckets?: number;
   /**

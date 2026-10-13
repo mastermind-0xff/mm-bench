@@ -1,6 +1,7 @@
 import { extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Worker } from 'node:worker_threads';
+import { escapeControls } from './format.js';
 import { MachineProbe } from './machine.js';
 import { TASK_KEY, type WorkerMessage, type WorkerTask } from './protocol.js';
 import type { MeasuredSample } from './report.js';
@@ -59,7 +60,7 @@ export const runSample = (
     worker.stderr.on('data', (chunk: string) => {
       stderr = (stderr + chunk).slice(-STDERR_TAIL);
     });
-    const label = `"${name}" (sample ${String(task.sample + 1)})`;
+    const label = `"${escapeControls(name)}" (sample ${String(task.sample + 1)})`;
     const withStderr = (message: string): string =>
       stderr.trim() === '' ?
         message

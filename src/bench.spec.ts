@@ -47,6 +47,18 @@ describe('bench', () => {
       TypeError
     );
   });
+
+  it('escapes control characters of names in errors', async () => {
+    expect(() => bench('bad\x1b[2J', 5 as never)).toThrow(
+      'case "bad\\x1b[2J" needs a function'
+    );
+    await expect(
+      compare(
+        bench('tw\x07in', () => 1),
+        bench('tw\x07in', () => 2)
+      )
+    ).rejects.toThrow('named "tw\\x07in"');
+  });
 });
 
 describe('compare', () => {
@@ -166,6 +178,9 @@ describe('end to end', { timeout: 60_000 }, () => {
 
   it('prints the report side by side', async () => {
     const { stdout } = await runFixture('reporter.js');
+    const hasThreadCpuUsage =
+      typeof (process as { threadCpuUsage?: unknown }).threadCpuUsage ===
+      'function';
     for (const text of [
       'mm-bench',
       'sample 1/2',
@@ -175,7 +190,9 @@ describe('end to end', { timeout: 60_000 }, () => {
       'slower',
       'Run time, % of runs',
       'Mean run time over the sample',
-      "Function's thread, % of a core",
+      hasThreadCpuUsage ?
+        "Function's thread, % of a core"
+      : "Function's thread: needs a Node version with process.threadCpuUsage",
       'All cores usage',
       'Delta heap, thread cost',
       'Total heap used',

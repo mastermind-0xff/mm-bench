@@ -26,20 +26,24 @@ side; in a narrow one (or when the output is piped) they are stacked. Set
 ## Writing your own
 
 ```js
-import { bench, compare } from 'mm-bench';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { bench, compare, isWorker } from 'mm-bench';
 
 const input = prepare(); // top-level data is prepared in the workers too
+// side effects the cases don't need: once, not in every worker
+if (!isWorker()) mkdirSync('results', { recursive: true });
 
-await compare(
+const report = await compare(
   bench('current', () => current(input)),
   bench('candidate', () => candidate(input))
 );
+
+// after the last call: runs once, on the main thread
+writeFileSync('results/report.json', JSON.stringify(report));
 ```
 
 - Every sample runs in a fresh worker, which imports your script again and
-  measures one case when it reaches its call. Code before the call runs in
-  every worker; code after the last call runs only once, on the main
-  thread.
+  measures one case when it reaches its call.
 - Return the result of the work from the case (`() => current(input)`), so
   V8 can't drop the call as dead code.
 - Defaults: 4 samples, `time: 'auto'` (2 s to 10 s per case, aiming at
@@ -47,42 +51,5 @@ await compare(
   case) or as the last argument of `compare` (all cases), e.g.
   `{ runs: 100_000 }`, `{ time: 5000 }` or `{ batchSize: 100 }`.
 
-## Reading the graphs
-
-Graphs over the sample show their average, min and max under the bars;
-the number on the title row is the top of the scale, shared by the
-compared cases, so the case that stands out shows.
-
-### Memory
-
-- **Delta heap**: the worker's V8 heap above its thread cost, the heap it
-  holds when measuring starts, right after a full garbage collection (V8's
-  own, the modules, your file's data; about 6–8 MB). What rises above 0 is
-  the case's: garbage piling up until a collection, or retained memory as
-  a rising trend.
-- **Total heap used**: the same with the thread cost, which hides small
-  footprints.
-- Fast cases show a floor of about 1 MB in Delta heap: mm-bench's own
-  timer allocates on every read (Node 22 has no nanosecond timer that
-  doesn't), and V8's young generation fills with it and empties. It is
-  the same for every case; a case's own memory rises above it.
-
-### CPU
-
-- **Function's thread**, 0–100% of a core: the worker thread calling the
-  function. Sync work keeps it near 100%; it drops while the function
-  waits for I/O, timers or other threads.
-- **All cores usage**, in percent of all the machine's cores: the whole
-  process, every thread: the function's, V8's garbage collector and
-  compiler, libuv's thread pool (async file I/O, crypto, zlib) and
-  mm-bench's main thread. One busy thread on 12 cores is 8%.
-- **Machine cores**, not drawn by default (`cpu.js` and `cpu-all-cores.js`
-  add it): every logical core of the machine, all processes, from
-  `os.cpus()`. Threads move between cores, so one busy thread can show as
-  several partly busy cores. `other processes` is what the rest of the
-  machine used meanwhile.
-- **Busy machine**: when other processes use 10% of the machine's CPU or
-  more while a case is measured, the case gets a warning, whichever graphs
-  are drawn: they compete for the cores, so expect noisier numbers.
-- Windows counts CPU time in steps of 15.6 ms, so its CPU graphs use
-  windows of at least 62.5 ms (125 ms for the machine's cores).
+The [main README](../README.md) has every option, the report's data and
+[how to read the graphs](../README.md#reading-the-graphs).

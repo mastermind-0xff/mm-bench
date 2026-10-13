@@ -26,7 +26,8 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "dist"
+    "dist",
+    "CHANGELOG.md"
   ],
   "sideEffects": false,
   "engines": {
@@ -37,6 +38,7 @@
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "test": "npm run build && vitest run",
     "test:watch": "vitest",
+    "coverage": "npm run build && vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -52,6 +54,7 @@
     "@eslint/js": "^10.0.1",
     "@rollup/plugin-typescript": "^12.3.0",
     "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^5.0.3",
     "eslint": "^10.11.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.13.0",

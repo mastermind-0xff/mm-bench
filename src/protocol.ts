@@ -1,6 +1,6 @@
 import type { WorkerSample } from './measure.js';
 import type { SampleBudget } from './options.js';
-import type { ResolvedMeasureOptions } from './types.js';
+import type { Environment, ResolvedMeasureOptions } from './types.js';
 
 /**
  * Messages between the main thread and the workers. Types only: the worker
@@ -36,6 +36,11 @@ export interface WorkerTask {
   readonly sample: number;
   readonly budget: SampleBudget;
   readonly options: ResolvedMeasureOptions;
+  /**
+   * The main thread's environment, for the empty reports of earlier calls:
+   * a worker doesn't spend time measuring the timer again.
+   */
+  readonly environment: Environment;
 }
 
 export type WorkerMessage =
