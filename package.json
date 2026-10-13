@@ -1,0 +1,65 @@
+{
+  "name": "mm-bench",
+  "version": "0.1.0",
+  "description": "Microbenchmarks with run time distributions: every call is timed in a fresh worker, with CPU and memory probes, and plotted side by side with mm-logger.",
+  "keywords": [
+    "benchmark",
+    "microbenchmark",
+    "performance",
+    "histogram",
+    "distribution",
+    "worker",
+    "typescript"
+  ],
+  "author": "Tihomir Trifonov",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/cjs/index.cjs",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "npm run clean && rollup -c && tsc -p tsconfig.build.json",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "test": "npm run build && vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test",
+    "prepublishOnly": "npm run check && npm run build",
+    "demo": "npm run build && node demo/compare.js"
+  },
+  "dependencies": {
+    "mm-logger": "file:../mm-logger"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@rollup/plugin-typescript": "^12.3.0",
+    "@types/node": "^22.0.0",
+    "eslint": "^10.11.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.9",
+    "rollup": "^4.63.5",
+    "tslib": "^2.8.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.70.1",
+    "vitest": "^5.0.2"
+  }
+}

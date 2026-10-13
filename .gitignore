@@ -1,0 +1,19 @@
+# dependencies and build output
+node_modules
+dist
+coverage
+*.tgz
+
+# logs
+*.log
+npm-debug.log*
+
+# local only: assistant settings, design brief and references
+.claude
+resources
+
+# editors and OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db
