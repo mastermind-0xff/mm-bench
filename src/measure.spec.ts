@@ -1,3 +1,5 @@
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
 import { runInNewContext } from 'node:vm';
 import {
@@ -19,6 +21,44 @@ const config = (overrides: Partial<MeasureConfig> = {}): MeasureConfig => ({
 
 const sum = (values: readonly number[]): number =>
   values.reduce((total, value) => total + value, 0);
+
+type MeasureModule = typeof import('./measure.js');
+
+const requireBuilt = createRequire(import.meta.url);
+/** The built module (`npm test` builds first), as the package ships it. */
+const builds: Record<string, () => Promise<MeasureModule>> = {
+  esm: async () =>
+    (await import(
+      new URL('../dist/esm/measure.js', import.meta.url).href
+    )) as MeasureModule,
+  cjs: () =>
+    Promise.resolve(
+      requireBuilt(
+        fileURLToPath(new URL('../dist/cjs/measure.cjs', import.meta.url))
+      ) as MeasureModule
+    ),
+};
+
+describe('the build', () => {
+  // the sources store every result in `sink`, so V8 can't drop the calls
+  // as dead code; a bundler that drops the stores measures something else
+  it.each(Object.keys(builds))(
+    'stores the results of sync and async calls in sink (%s)',
+    async (format) => {
+      const built = await (builds[format] as () => Promise<MeasureModule>)();
+      const result = { measured: true };
+      const quick = config({ budget: { runs: 3 }, warmup: { runs: 2 } });
+      await built.measure(() => result, quick);
+      expect(built.sink).toBe(result);
+      const later = { awaited: true };
+      await built.measure(() => Promise.resolve(later), quick);
+      expect(built.sink).toBe(later);
+      // the empty calls timing the overhead are stored too
+      built.calibrate(2);
+      expect(built.sink).toBeUndefined();
+    }
+  );
+});
 
 describe('collectGarbage', () => {
   it('frees garbage without exposing gc to other code', () => {

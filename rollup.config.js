@@ -17,10 +17,17 @@ const external = ['mm-logger', /^node:/];
 // imports it
 const input = ['src/index.ts', 'src/worker.ts'];
 
+// no tree-shaking: the measuring loops store results in `sink`, which
+// nothing reads, so V8 can't drop the measured calls as dead code; rollup
+// would drop those stores (and the empty calls timing the overhead) as
+// unused, measuring something else than the sources do
+const treeshake = false;
+
 export default [
   {
     input,
     external,
+    treeshake,
     plugins: [typescriptPlugin()],
     output: {
       dir: 'dist/esm',
@@ -34,6 +41,7 @@ export default [
   {
     input,
     external,
+    treeshake,
     plugins: [typescriptPlugin()],
     output: {
       dir: 'dist/cjs',
