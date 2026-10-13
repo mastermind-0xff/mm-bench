@@ -1,6 +1,7 @@
 import { isMainThread, parentPort, workerData } from 'node:worker_threads';
 import { environment } from './environment.js';
 import { resolveBenchFile, type BenchFile } from './file.js';
+import { escapeControls } from './format.js';
 import { measure } from './measure.js';
 import {
   checkMeasureOptions,
@@ -78,7 +79,7 @@ export const bench: BenchFunction = (name, fn, options) => {
     throw new TypeError('mm-bench: a case needs a name.');
   if (typeof fn !== 'function')
     throw new TypeError(
-      `mm-bench: case "${name}" needs a function, got ${typeof fn}.`
+      `mm-bench: case "${escapeControls(name)}" needs a function, got ${typeof fn}.`
     );
   checkMeasureOptions(options);
   // values are checked now, where the mistake is
@@ -129,7 +130,7 @@ const parseArguments = (
         );
       if (names.has(value.name))
         throw new TypeError(
-          `mm-bench: two cases are named "${value.name}": names must be unique.`
+          `mm-bench: two cases are named "${escapeControls(value.name)}": names must be unique.`
         );
       names.add(value.name);
       return value;
@@ -148,10 +149,12 @@ const measureInWorker = async (
   };
   const names = cases.map(({ name }) => name);
   const target = cases[task.case];
+  const list = (each: readonly string[]): string =>
+    each.map(escapeControls).join(', ');
   if (target === undefined || names.join('\0') !== task.names.join('\0'))
     post({
       type: 'error',
-      message: `the worker reached a call with other cases (${names.join(', ')}) than the main thread (${task.names.join(', ')}). Cases must be the same on every run of the file.`,
+      message: `the worker reached a call with other cases (${list(names)}) than the main thread (${list(task.names)}). Cases must be the same on every run of the file.`,
     });
   else {
     post({ type: 'progress', runs: 0 });
@@ -211,6 +214,7 @@ const measureCall = async (
           sample,
           budget: sampleBudget(options, sample),
           options,
+          environment: env,
         },
         { name, timeout: options.timeout }
       );
@@ -248,7 +252,7 @@ const start = (args: readonly unknown[]): Promise<Report> => {
       // an earlier call: the worker goes on to the one it measures
       return Promise.resolve({
         cases: [],
-        environment: environment(),
+        environment: task.environment,
         duration: 0,
       });
     (globalThis as Record<symbol, unknown>)[Symbol.for(REACHED_KEY)] = true;

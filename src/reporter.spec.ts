@@ -61,6 +61,15 @@ describe('loggerReporter', () => {
     expect(text).not.toContain('\x1b');
   });
 
+  it('escapes control characters of the CPU name', async () => {
+    const text = await render({
+      ...report,
+      environment: { ...report.environment, cpu: 'Odd\x1b]0;title\x07 CPU' },
+    });
+    expect(text).toContain('Odd\\x1b]0;title\\x07 CPU');
+    expect(text).not.toContain('\x1b');
+  });
+
   it('hints at coarse timers and few runs', async () => {
     const text = await render(report);
     expect(text).toContain('try batchSize');

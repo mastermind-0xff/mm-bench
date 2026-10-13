@@ -47,6 +47,18 @@ describe('bench', () => {
       TypeError
     );
   });
+
+  it('escapes control characters of names in errors', async () => {
+    expect(() => bench('bad\x1b[2J', 5 as never)).toThrow(
+      'case "bad\\x1b[2J" needs a function'
+    );
+    await expect(
+      compare(
+        bench('tw\x07in', () => 1),
+        bench('tw\x07in', () => 2)
+      )
+    ).rejects.toThrow('named "tw\\x07in"');
+  });
 });
 
 describe('compare', () => {

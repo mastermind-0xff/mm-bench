@@ -542,7 +542,7 @@ export const loggerReporter: LoggerReporterFunction = (options = {}) => {
           left: [
             ['mm-bench', 'textHighlight'],
             [
-              `  node ${env.node} · ${env.platform} ${env.arch} · ${env.cpu} (${String(env.cores)} cores) · timer step ${formatTime(env.timerResolution)}`,
+              `  node ${env.node} · ${env.platform} ${env.arch} · ${escapeControls(env.cpu)} (${String(env.cores)} cores) · timer step ${formatTime(env.timerResolution)}`,
               'textDim',
             ],
           ],
