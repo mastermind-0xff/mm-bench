@@ -506,6 +506,29 @@ export type GraphName =
   | 'heap'
   | 'machine';
 
+/**
+ * Fields of `loggerReporter`'s summary table, one column each, named after
+ * the report's data:
+ * - `'mean'`, `'median'`, `'p75'`, `'p99'`, `'p999'`, `'min'`, `'max'`,
+ *   `'stdDev'`: times per call from `Stats`;
+ * - `'opsPerSecond'`: calls per second at the mean time;
+ * - `'runs'`: measured runs, all samples;
+ * - `'relative'`: `fastest`, or how much slower than the fastest case, from
+ *   `CaseReport.relative`.
+ */
+export type SummaryField =
+  | 'mean'
+  | 'median'
+  | 'p75'
+  | 'p99'
+  | 'p999'
+  | 'min'
+  | 'max'
+  | 'stdDev'
+  | 'opsPerSecond'
+  | 'runs'
+  | 'relative';
+
 export interface LoggerReporterOptions {
   /**
    * Width of each case's column in terminal columns, frame excluded.
@@ -522,6 +545,14 @@ export interface LoggerReporterOptions {
    * `'machine'`; add it with `[...DEFAULT_GRAPHS, 'machine']`.
    */
   readonly graphs?: readonly GraphName[];
+  /**
+   * Table of the cases after their graphs, a row per case in call order and
+   * a column per field, when there are two or more cases: `true` for
+   * `DEFAULT_SUMMARY`, `false` (or `[]`) for none, or the fields in their
+   * order, e.g. `[...DEFAULT_SUMMARY, 'runs']`. Names are shortened to fit
+   * the terminal; pick fewer fields for a narrow one. Default: `true`.
+   */
+  readonly summary?: boolean | readonly SummaryField[];
   /**
    * Buckets of the distribution graph: `'cols'` for one per graph column
    * (sharpest), or a number, which the graph scales to its columns.
