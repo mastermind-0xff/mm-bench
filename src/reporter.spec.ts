@@ -152,9 +152,61 @@ describe('loggerReporter', () => {
   });
 
   it('stacks cases in fewer columns', async () => {
-    const text = await render(report, { columns: 1, progress: false });
+    // the summary has frames of its own
+    const text = await render(report, {
+      columns: 1,
+      progress: false,
+      summary: false,
+    });
     expect(text).not.toContain(' | ');
     expect(text).not.toContain('sample 1/1');
+  });
+
+  it('sums the cases up in a table after their graphs', async () => {
+    const text = await render(report);
+    expect(text.indexOf('\ncase ')).toBeGreaterThan(
+      text.lastIndexOf('Total heap used')
+    );
+    expect(text.split('\n').slice(-4)).toEqual([
+      'case        |   mean | median |    p99 | ops/s | vs fastest',
+      'quick       |  360ns |  400ns |  600ns | 2.78M | 120.00× slower',
+      'slow\\x1b[2J |  950ns |  900ns | 1.00µs | 1.05M | 316.67× slower',
+      'tiny        | 3.00ns | 3.00ns | 3.00ns |  333M | fastest',
+    ]);
+  });
+
+  it('shows the chosen summary fields in their order', async () => {
+    const text = await render(report, {
+      graphs: [],
+      summary: ['runs', 'relative', 'median'],
+    });
+    expect(text.split('\n').slice(-4)).toEqual([
+      'case        | runs | vs fastest     | median',
+      'quick       |  100 | 120.00× slower |  400ns',
+      'slow\\x1b[2J |   10 | 316.67× slower |  900ns',
+      'tiny        |    5 | fastest        | 3.00ns',
+    ]);
+  });
+
+  it('leaves the summary out for one case, or when asked', async () => {
+    const table = /^case\b/m;
+    const single = { ...report, cases: report.cases.slice(0, 1) };
+    expect(await render(single)).not.toMatch(table);
+    expect(await render(report, { summary: false })).not.toMatch(table);
+    expect(await render(report, { summary: [] })).not.toMatch(table);
+  });
+
+  it('shortens names to fit the summary in the terminal', async () => {
+    const terminal = (process.stdout as { columns?: number }).columns ?? 80;
+    const long: Report = {
+      ...report,
+      cases: report.cases.map((caseReport, index) =>
+        index === 0 ? { ...caseReport, name: 'x'.repeat(200) } : caseReport
+      ),
+    };
+    const lines = (await render(long, { graphs: [] })).split('\n').slice(-4);
+    expect(lines[1]).toMatch(/^x+… \| /);
+    for (const line of lines) expect(line.length).toBeLessThanOrEqual(terminal);
   });
 
   it('prints nothing for an empty report', async () => {
@@ -168,6 +220,12 @@ describe('loggerReporter', () => {
     expect(() => loggerReporter({ width: 5 })).toThrow(RangeError);
     expect(() => loggerReporter({ columns: 0 })).toThrow(RangeError);
     expect(() => loggerReporter({ graphs: ['pie'] as never })).toThrow(
+      RangeError
+    );
+    expect(() => loggerReporter({ summary: 'yes' as never })).toThrow(
+      RangeError
+    );
+    expect(() => loggerReporter({ summary: ['pie'] as never })).toThrow(
       RangeError
     );
     expect(() => loggerReporter({ buckets: 0 })).toThrow(RangeError);

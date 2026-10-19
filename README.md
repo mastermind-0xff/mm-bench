@@ -51,7 +51,8 @@ await compare(
 
 It prints a column per case, here two side by side on a laptop with the
 usual apps open (other processes kept one case's cores busy enough for a
-warning), without colors and with three of the graphs:
+warning), without colors and with three of the graphs, then a summary of
+the cases:
 
 ```text
 mm-bench  node v22.22.2 · win32 x64 · Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz (12 cores) · timer step 100ns
@@ -100,6 +101,10 @@ Delta heap, thread cost 6.4 MB 3.47 MB | Delta heap, thread cost 6.4 MB 3.47 MB
 average: 1.17 MB               0.00 MB | average: 2.18 MB               0.00 MB
 min: 0.57 MB                           | min: 0.89 MB
 max: 1.91 MB                           | max: 3.47 MB
+
+case   |   mean | median |    p99 | ops/s | vs fastest
+join   | 1.62µs | 1.42µs | 4.82µs |  616k | 2.19× slower
+concat |  743ns |  568ns | 1.57µs | 1.35M | fastest
 ```
 
 ## How it works
@@ -195,19 +200,21 @@ prepared.
 ### `loggerReporter(options?)`
 
 The default reporter: a header, a line per finished sample, then a column
-per case with its stats, hints and graphs, side by side.
+per case with its stats, hints and graphs, side by side, and a summary
+table of the cases.
 
-| Option     | Default                   | What it does                                                                                                   |
-| ---------- | ------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `graphs`   | `DEFAULT_GRAPHS`          | Graphs of each case, top to bottom, from `GRAPH_NAMES`. Add `'machine'` with `[...DEFAULT_GRAPHS, 'machine']`. |
-| `width`    | the terminal's, split     | Width of each case's column.                                                                                   |
-| `columns`  | as many as fit at 40 wide | Cases side by side; more continue below.                                                                       |
-| `buckets`  | `'cols'`                  | Buckets of the distribution: one per graph column, or a number.                                                |
-| `trim`     | `0.001`                   | See `distribution`.                                                                                            |
-| `rows`     | `9`                       | Rows of the distribution graph; the others take a third.                                                       |
-| `progress` | `true`                    | Print a line per finished sample.                                                                              |
-| `colors`   | `true` unless `NO_COLOR`  | Paint with colors.                                                                                             |
-| `write`    | `console.log`             | Line destination.                                                                                              |
+| Option     | Default                   | What it does                                                                                                                             |
+| ---------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `graphs`   | `DEFAULT_GRAPHS`          | Graphs of each case, top to bottom, from `GRAPH_NAMES`. Add `'machine'` with `[...DEFAULT_GRAPHS, 'machine']`.                           |
+| `summary`  | `DEFAULT_SUMMARY`         | Table of the cases after their graphs, two or more cases: fields from `SUMMARY_FIELDS`, e.g. `[...DEFAULT_SUMMARY, 'runs']`, or `false`. |
+| `width`    | the terminal's, split     | Width of each case's column.                                                                                                             |
+| `columns`  | as many as fit at 40 wide | Cases side by side; more continue below.                                                                                                 |
+| `buckets`  | `'cols'`                  | Buckets of the distribution: one per graph column, or a number.                                                                          |
+| `trim`     | `0.001`                   | See `distribution`.                                                                                                                      |
+| `rows`     | `9`                       | Rows of the distribution graph; the others take a third.                                                                                 |
+| `progress` | `true`                    | Print a line per finished sample.                                                                                                        |
+| `colors`   | `true` unless `NO_COLOR`  | Paint with colors.                                                                                                                       |
+| `write`    | `console.log`             | Line destination.                                                                                                                        |
 
 mm-logger is loaded only when the reporter prints, so `output: false` and
 the workers never load it.
@@ -248,8 +255,9 @@ new Logger({ plugins: [graphPlugin()] }).infoGraph(cases[0].percents, {
   of the graphs over the sample.
 - `computeStats(histogram, shift?)` and `mergeHistograms(histograms)`: the
   stats of a histogram, and histograms added up.
-- `GRAPH_NAMES`, `DEFAULT_GRAPHS`, `DEFAULT_BUCKETS`, `DEFAULT_TRIM`,
-  `MACHINE_WINDOW`, and every type of the report and options.
+- `GRAPH_NAMES`, `DEFAULT_GRAPHS`, `SUMMARY_FIELDS`, `DEFAULT_SUMMARY`,
+  `DEFAULT_BUCKETS`, `DEFAULT_TRIM`, `MACHINE_WINDOW`, and every type of
+  the report and options.
 
 ## The report
 

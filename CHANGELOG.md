@@ -26,7 +26,9 @@ with mm-logger.
 - **`loggerReporter(options?)`**: a column per case with its stats, hints
   (batch size, few runs, busy machine) and graphs: distribution, mean run
   time over the sample, the function's thread, all cores, delta and total
-  heap, and the machine's cores. Compared cases share every scale.
+  heap, and the machine's cores. Compared cases share every scale. Then a
+  summary table of the cases (`summary`): mean, median, p99, ops/s and how
+  much slower than the fastest by default, any fields of `SUMMARY_FIELDS`.
 - **`distribution(report, options?)`**: run times in equal buckets over a
   shared range, widths whole multiples of the timer's step, sparse
   outliers trimmed; **`caseSeries`**, **`computeStats`** and

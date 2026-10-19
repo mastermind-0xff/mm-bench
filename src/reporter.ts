@@ -19,6 +19,7 @@ import type {
   Reporter,
   ResolvedMeasureOptions,
   SampleProgress,
+  SummaryField,
 } from './types.js';
 
 /** Graphs of `loggerReporter`, in their order in its reports. */
@@ -36,6 +37,47 @@ export const GRAPH_NAMES: readonly GraphName[] = Object.freeze([
 export const DEFAULT_GRAPHS: readonly GraphName[] = Object.freeze(
   GRAPH_NAMES.filter((graph) => graph !== 'machine')
 );
+
+/** Fields of `loggerReporter`'s summary table, see `SummaryField`. */
+export const SUMMARY_FIELDS: readonly SummaryField[] = Object.freeze([
+  'mean',
+  'median',
+  'p75',
+  'p99',
+  'p999',
+  'min',
+  'max',
+  'stdDev',
+  'opsPerSecond',
+  'runs',
+  'relative',
+]);
+
+/** Fields of `loggerReporter`'s summary table by default. */
+export const DEFAULT_SUMMARY: readonly SummaryField[] = Object.freeze([
+  'mean',
+  'median',
+  'p99',
+  'opsPerSecond',
+  'relative',
+]);
+
+/** Column headers of the summary fields, as the cases' stats name them. */
+const SUMMARY_LABELS: Readonly<Record<SummaryField, string>> = {
+  mean: 'mean',
+  median: 'median',
+  p75: 'p75',
+  p99: 'p99',
+  p999: 'p99.9',
+  min: 'min',
+  max: 'max',
+  stdDev: 'stddev',
+  opsPerSecond: 'ops/s',
+  runs: 'runs',
+  relative: 'vs fastest',
+};
+/** Names in the summary are shortened to fit, down to this many columns. */
+const MIN_NAME_WIDTH = 8;
 
 const MIN_WIDTH = 20;
 /** Narrowest column when the reporter picks the number of columns. */
@@ -116,6 +158,7 @@ const checkOptions = (options: LoggerReporterOptions): void => {
     width,
     columns,
     graphs,
+    summary,
     buckets,
     trim,
     rows,
@@ -140,6 +183,21 @@ const checkOptions = (options: LoggerReporterOptions): void => {
     )
   )
     fail('graphs', `a list of ${GRAPH_NAMES.join(', ')}`, graphs);
+  if (
+    summary !== undefined &&
+    typeof summary !== 'boolean' &&
+    !(
+      Array.isArray(summary) &&
+      (summary as unknown[]).every((field) =>
+        (SUMMARY_FIELDS as readonly unknown[]).includes(field)
+      )
+    )
+  )
+    fail(
+      'summary',
+      `a boolean or a list of ${SUMMARY_FIELDS.join(', ')}`,
+      summary
+    );
   if (progress !== undefined && typeof progress !== 'boolean')
     fail('progress', 'a boolean', progress);
   if (colors !== undefined && typeof colors !== 'boolean')
@@ -379,6 +437,103 @@ const caseText = (
   };
 };
 
+/** Cuts `text` to `width` terminal columns, ending in `…` when cut. */
+const fitWidth = (
+  { charWidth, textWidth }: MmLogger,
+  text: string,
+  width: number
+): string => {
+  if (textWidth(text) <= width) return text;
+  let fitted = '';
+  let used = 0;
+  for (const char of text) {
+    const columns = charWidth(char.codePointAt(0) ?? 0);
+    if (used + columns > width - 1) break;
+    fitted += char;
+    used += columns;
+  }
+  return `${fitted}…`;
+};
+
+/** A case's value of a summary field, with its style. */
+const summaryValue = (
+  { stats, relative }: CaseReport,
+  field: SummaryField
+): Segment => {
+  if (field === 'relative')
+    return relative <= 1 ?
+        ['fastest', 'benchGood']
+      : [formatRelative(relative), 'benchBad'];
+  return [
+    field === 'opsPerSecond' || field === 'runs' ?
+      formatCount(stats[field])
+    : formatTime(stats[field]),
+    'textHighlight',
+  ];
+};
+
+/**
+ * Table of the cases: a row per case in call order, a column per field.
+ * Numbers are right-aligned; names are shortened to fit `width`, down to
+ * `MIN_NAME_WIDTH`.
+ */
+const summaryText = (
+  mm: MmLogger,
+  report: Report,
+  fields: readonly SummaryField[],
+  width: number
+): TextBlock => {
+  const names = report.cases.map(({ name }) => escapeControls(name));
+  const rows = report.cases.map((caseReport) =>
+    fields.map((field) => summaryValue(caseReport, field))
+  );
+  const widest = (texts: readonly string[]): number =>
+    Math.max(...texts.map((text) => mm.textWidth(text)));
+  const widths = fields.map((field, index) =>
+    widest([SUMMARY_LABELS[field], ...rows.map((row) => row[index]?.[0] ?? '')])
+  );
+  const rest = widths.reduce((sum, columns) => sum + FRAME.length + columns, 0);
+  const nameWidth = Math.min(
+    widest(['case', ...names]),
+    Math.max(MIN_NAME_WIDTH, width - rest)
+  );
+  const pad = (text: string, columns: number): string =>
+    ' '.repeat(Math.max(0, columns - mm.textWidth(text)));
+  const line = (name: Segment, values: readonly Segment[]): TextLine => {
+    const fitted = fitWidth(mm, name[0], nameWidth);
+    return {
+      left: [
+        [`${fitted}${pad(fitted, nameWidth)}`, name[1]],
+        ...values.flatMap(([text, style], index): Segment[] => {
+          const columns = widths[index] ?? 0;
+          // text left-aligned, without trailing spaces in the last column
+          const aligned =
+            fields[index] !== 'relative' ? `${pad(text, columns)}${text}`
+            : index === values.length - 1 ? text
+            : `${text}${pad(text, columns)}`;
+          return [
+            [FRAME, 'textDim'],
+            [aligned, style],
+          ];
+        }),
+      ],
+    };
+  };
+  return {
+    width,
+    lines: [
+      { left: [] },
+      line(
+        ['case', 'textDim'],
+        fields.map((field) => [SUMMARY_LABELS[field], 'textDim'])
+      ),
+      ...rows.map((row, index) =>
+        line([names[index] ?? '', 'textHighlight'], row)
+      ),
+    ],
+  };
+};
+
 /** Time axis labels, formatted as the graphs format theirs. */
 interface AxisLabels {
   readonly start: string;
@@ -499,6 +654,10 @@ export const loggerReporter: LoggerReporterFunction = (options = {}) => {
     });
   const colors = options.colors ?? !process.env.NO_COLOR;
   const graphs = options.graphs ?? DEFAULT_GRAPHS;
+  const summary =
+    options.summary === undefined || options.summary === true ? DEFAULT_SUMMARY
+    : options.summary === false ? []
+    : options.summary;
   const rows = options.rows ?? 9;
   let loaded: MmLogger | undefined;
   let plan: Plan | undefined;
@@ -786,6 +945,13 @@ export const loggerReporter: LoggerReporterFunction = (options = {}) => {
           }
       });
       logger.endColumns();
+      if (summary.length > 0 && report.cases.length >= 2) {
+        // across the terminal, as the header
+        const terminal = Math.max(MIN_WIDTH, terminalWidth());
+        (lines ?? createLogger(mm, { columns: 1, width: terminal })).benchText(
+          summaryText(mm, report, summary, terminal)
+        );
+      }
     },
   };
   return reporter;

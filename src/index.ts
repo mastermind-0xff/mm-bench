@@ -25,7 +25,13 @@
 export { bench, compare, isWorker } from './bench.js';
 export { DEFAULT_BUCKETS, DEFAULT_TRIM, distribution } from './distribution.js';
 export { DEFAULT_AUTO_TIME, DEFAULT_MEASURE_OPTIONS } from './options.js';
-export { DEFAULT_GRAPHS, GRAPH_NAMES, loggerReporter } from './reporter.js';
+export {
+  DEFAULT_GRAPHS,
+  DEFAULT_SUMMARY,
+  GRAPH_NAMES,
+  loggerReporter,
+  SUMMARY_FIELDS,
+} from './reporter.js';
 export {
   caseSeries,
   MACHINE_WINDOW,
