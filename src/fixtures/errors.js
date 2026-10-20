@@ -1,5 +1,5 @@
 // Calls that fail, their error messages as JSON.
-import { bench, compare } from 'mm-bench';
+import { bench, compare } from '@mmutils/bench';
 
 const options = { runs: 10, samples: 1, warmup: { runs: 1 }, output: false };
 const messages = [];

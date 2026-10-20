@@ -9,9 +9,9 @@ const typescriptPlugin = () =>
     outDir: undefined,
   });
 
-// mm-logger is loaded lazily, only by the logger reporter, so workers and
+// @mmutils/logger is loaded lazily, only by the logger reporter, so workers and
 // `output: false` never load it
-const external = ['mm-logger', /^node:/];
+const external = ['@mmutils/logger', /^node:/];
 
 // the worker entry is an input of its own: workers load it by URL, nothing
 // imports it

@@ -21,13 +21,13 @@ side; in a narrow one (or when the output is piped) they are stacked. Set
 | `cpu.js`           | The same hashing on the function's thread, on one pool thread and on four: the function's thread, all cores usage, and the machine's cores.       | ~30 s |
 | `batch.js`         | A function faster than the timer's step: timed one call per run, then in batches of 100 (`batchSize`). The report hints at the batch size.        | ~5 s  |
 | `memory.js`        | Allocating on every call versus reusing: the delta and total heap graphs, GC pauses in the timeline.                                              | ~6 s  |
-| `raw-data.js`      | `output: false`: the raw report (stats, histogram, ticks) and a custom plot with your own mm-logger.                                              | ~2 s  |
+| `raw-data.js`      | `output: false`: the raw report (stats, histogram, ticks) and a custom plot with your own @mmutils/logger.                                        | ~2 s  |
 
 ## Writing your own
 
 ```js
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { bench, compare, isWorker } from 'mm-bench';
+import { bench, compare, isWorker } from '@mmutils/bench';
 
 const input = prepare(); // top-level data is prepared in the workers too
 // side effects the cases don't need: once, not in every worker

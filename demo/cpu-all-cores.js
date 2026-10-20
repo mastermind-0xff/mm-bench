@@ -19,7 +19,7 @@
 import { pbkdf2Sync } from 'node:crypto';
 import { availableParallelism } from 'node:os';
 import { Worker } from 'node:worker_threads';
-import { bench, compare, DEFAULT_GRAPHS, loggerReporter } from 'mm-bench';
+import { bench, compare, DEFAULT_GRAPHS, loggerReporter } from '@mmutils/bench';
 
 const cores = availableParallelism();
 /** About a quarter of a millisecond per hash. */

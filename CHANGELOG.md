@@ -1,10 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.1.0
 
-First release: microbenchmarks with run time distributions, every sample
-in a fresh worker thread, with CPU and memory probes, plotted side by side
-with mm-logger.
+First release, as `@mmutils/bench`: microbenchmarks with run time
+distributions, every sample in a fresh worker thread, with CPU and memory
+probes, plotted side by side with `@mmutils/logger`.
 
 ### Added
 

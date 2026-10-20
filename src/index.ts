@@ -3,7 +3,7 @@
  *
  * ```ts
  * // bench/strings.js, run with `node bench/strings.js`
- * import { bench, compare } from 'mm-bench';
+ * import { bench, compare } from '@mmutils/bench';
  *
  * // prepared at the top level: the workers run this file too
  * const words = Array.from({ length: 50 }, (_, index) => `word${index}`);

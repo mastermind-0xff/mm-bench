@@ -1,10 +1,10 @@
-# mm-bench
+# @mmutils/bench
 
 Microbenchmarks with run time distributions. Every run is timed on its
 own, in fresh worker threads, with CPU and memory probes between runs; the
 compared cases are plotted side by side with
-[mm-logger](https://www.npmjs.com/package/mm-logger), on shared scales, so
-the case that stands out shows at a glance.
+[@mmutils/logger](https://www.npmjs.com/package/@mmutils/logger), on shared
+scales, so the case that stands out shows at a glance.
 
 - **Distributions, not just means**: an exact histogram of every run's
   time, plotted as percent of runs per time bucket. 30% of runs at 200 ns,
@@ -25,7 +25,7 @@ the case that stands out shows at a glance.
 ## Install
 
 ```sh
-npm install --save-dev mm-bench
+npm install --save-dev @mmutils/bench
 ```
 
 Requires Node.js 22 or newer.
@@ -34,7 +34,7 @@ Requires Node.js 22 or newer.
 
 ```js
 // bench/strings.js, run with: node bench/strings.js
-import { bench, compare } from 'mm-bench';
+import { bench, compare } from '@mmutils/bench';
 
 // prepared at the top level: the workers run this file too
 const words = Array.from({ length: 50 }, (_, index) => `word${index}`);
@@ -49,63 +49,75 @@ await compare(
 );
 ```
 
-It prints a column per case, here two side by side on a laptop with the
-usual apps open (other processes kept one case's cores busy enough for a
-warning), without colors and with three of the graphs, then a summary of
-the cases:
+It prints a column per case, side by side, with its stats and graphs, then
+a summary of the cases. Here three of the six default graphs, from one run
+on a laptop (your numbers will differ):
+
+![mm-bench report: two cases side by side with their stats, run time distribution, mean run time over the sample and delta heap graphs, then a summary table](assets/compare.svg)
+
+<details>
+<summary><sub>The output above as plain text</sub></summary>
+
+<!-- output:compare -->
 
 ```text
 mm-bench  node v22.22.2 · win32 x64 · Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz (12 cores) · timer step 100ns
-2 cases · 4 samples · 2.00s · 100ms warm-up
+2 cases · 4 samples · auto: 2.00s–10.0s, aiming at 10.0k runs · 100ms warm-up
                                        |
-join                      2.19× slower | concat                         fastest
-mean      1.62µs                       | mean      743ns
-median    1.42µs                       | median    568ns
-p99       4.82µs                       | p99       1.57µs
-p99.9     20.6µs                       | p99.9     17.2µs
-ops/s     616k                         | ops/s     1.35M
-runs      1.11M                        | runs      2.08M
-stddev    2.68µs                       | stddev    2.91µs
-off graph 0.45%                        | off graph 0.17%
-overhead  76.6ns (subtracted)          | overhead  132ns (subtracted)
-! busy machine: other processes used   |
-  13% CPU                              |
+join                      74.9% slower | concat                         fastest
+mean      1.97µs                       | mean      1.13µs
+median    1.59µs                       | median    793ns
+p99       5.59µs                       | p99       2.29µs
+p99.9     17.4µs                       | p99.9     22.8µs
+ops/s     507k                         | ops/s     888k
+runs      904k                         | runs      1.47M
+stddev    3.65µs                       | stddev    5.40µs
+off graph 0.42%                        | off graph 0.25%
+overhead  113ns (subtracted)           | overhead  107ns (subtracted)
+! busy machine: other processes used   | ! busy machine: other processes used
+  35% CPU                              |   45% CPU
                                        |
-Run time, % of runs             60.0 % | Run time, % of runs             60.0 %
-│                                    │ | │  █                                 │
-│                                    │ | │  █                                 │
-│      ▂█                            │ | │  █                                 │
-│      ██                            │ | │  █                                 │
-│      ██                            │ | │  █▃                                │
-│      ██                            │ | │  ██                                │
-│      ██                            │ | │  ██                                │
-│      ██                            │ | │  ██                                │
-│      ██▁▁▂▂▂▂▁                     │ | │  ██▄▃▃▂                            │
-18ns                         7µs 218ns | 18ns                         7µs 218ns
+Run time, % of runs             53.9 % | Run time, % of runs             53.9 %
+│       █                            │ | │                                    │
+│       █                            │ | │   █                                │
+│       █                            │ | │   █                                │
+│       █                            │ | │   █                                │
+│       █                            │ | │   █                                │
+│       █                            │ | │   █                                │
+│      ▅█                            │ | │   █  ▁                             │
+│      ██                            │ | │  ██  █▆                            │
+│      ███▁▁▃▅▇▆▄▂          ▁        │ | │  ██▆███▆▁                          │
+43ns                         7µs 243ns | 43ns                         7µs 243ns
                                  0.0 % |                                  0.0 %
                                        |
-Mean run time over the sample  1.90 µs | Mean run time over the sample  1.90 µs
-│▆▄▃▃▃▄▃▆▇▇▇▅█▅▄▄▄▅▃▇▄▅▅▆▄▇▄▄▄▅▅▆▅▅▃▆│ | │                                    │
-│████████████████████████████████████│ | │▅▃▁▁▁▁▁▁▁▁▁▁▂▂▂▁▃▁▃▅▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▃│
+Mean run time over the sample  3.23 µs | Mean run time over the sample  3.23 µs
+│▁  ▁▁    █▄▄    ▂▃▄                 │ | │                                    │
+│█████▆▆▅▇███▇▅▅▆████▇▇▇█▇▆▅▇▅▆▇▇▇▆▇▇│ | │▂▂▁▁   ▁▁▁ ▂▁▂▂▂▁▁▂▂▁▄▂ ▁ ▁▁▂▂▁▁▂▁▁▃│
 │████████████████████████████████████│ | │████████████████████████████████████│
-0ms                          500ms 2µs | 0ms                          500ms 1µs
-average: 1.66 µs               0.00 µs | average: 0.76 µs               0.00 µs
-min: 1.48 µs                           | min: 0.69 µs
-max: 1.90 µs                           | max: 1.05 µs
+0µs                          500ms 1µs | 0µs                         500ms 31µs
+average: 2.11 µs               0.00 µs | average: 1.25 µs               0.00 µs
+min: 1.71 µs                           | min: 1.02 µs
+max: 3.23 µs                           | max: 1.55 µs
                                        |
-Delta heap, thread cost 6.4 MB 3.47 MB | Delta heap, thread cost 6.4 MB 3.47 MB
-│                                    │ | │ ▂▁▂▃▄ ▄    ▁  ▇  ▂ ▁ ▁  █▂   ▃   ▂▄│
-│       ▃▁ ▂  ▁▁▂▁▂▃ ▂  ▅ ▁  ▁   ▁▂▁▂│ | │▇█████▁█▄ ▅▇██▆█▄ █ █▂█▆ ██▃▆▂█▄▆███│
-│█▅█▄▅████▆█▇▇██████▄█▆████▄██▇█▇████│ | │█████████▆█████████▇████████████████│
-0ms                          500ms 2µs | 0ms                          500ms 1µs
-average: 1.17 MB               0.00 MB | average: 2.18 MB               0.00 MB
-min: 0.57 MB                           | min: 0.89 MB
-max: 1.91 MB                           | max: 3.47 MB
+Delta heap, thread cost 7.0 MB 3.47 MB | Delta heap, thread cost 7.0 MB 3.47 MB
+│▆▃   ▃  ▇ ▅▁   ▁ ▃▃ ▆▂▆█ ▅ ▂▁▁▁▂ ▁ ▂│ | │    ▆▄    ▂▂   ▃  ▅▂   ▂ ▃▁ █  ▄ ▇▂▁│
+│██▇▇▂██▂████▅▁▁████▇████▆█▆█████▃█▁█│ | │▃▆▃▁████▇▃██ ▅ █████▇▁██▂██▄█▄▇█ ███│
+│████████████████████████████████████│ | │██████████████▂█████████████████▇███│
+0µs                          500ms 1µs | 0µs                         500ms 31µs
+average: 2.40 MB               0.00 MB | average: 2.18 MB               0.00 MB
+min: 1.26 MB                           | min: 0.35 MB
+max: 3.47 MB                           | max: 3.42 MB
 
 case   |   mean | median |    p99 | ops/s | vs fastest
-join   | 1.62µs | 1.42µs | 4.82µs |  616k | 2.19× slower
-concat |  743ns |  568ns | 1.57µs | 1.35M | fastest
+join   | 1.97µs | 1.59µs | 5.59µs |  507k | 74.9% slower
+concat | 1.13µs |  793ns | 2.29µs |  888k | fastest
 ```
+
+<!-- /output -->
+
+<sub><i>Bars and frames may not line up in this text if your font lacks the block characters; the image shows the real alignment.</i></sub>
+
+</details>
 
 ## How it works
 
@@ -216,8 +228,8 @@ table of the cases.
 | `colors`   | `true` unless `NO_COLOR`  | Paint with colors.                                                                                                                       |
 | `write`    | `console.log`             | Line destination.                                                                                                                        |
 
-mm-logger is loaded only when the reporter prints, so `output: false` and
-the workers never load it.
+@mmutils/logger is loaded only when the reporter prints, so `output: false`
+and the workers never load it.
 
 ### `distribution(report, options?)`
 
@@ -233,8 +245,8 @@ tell apart never leave empty buckets between full ones.
   They are counted in `below` and `above`.
 
 ```js
-import { Logger, graphPlugin } from 'mm-logger';
-import { bench, distribution } from 'mm-bench';
+import { Logger, graphPlugin } from '@mmutils/logger';
+import { bench, distribution } from '@mmutils/bench';
 
 const numbers = Array.from({ length: 100 }, (_, index) => (index * 7919) % 101);
 const report = await bench('sort', () =>
@@ -342,6 +354,14 @@ the collection.
 [`demo/`](demo/README.md) has a complete bench script for each feature:
 distributions, comparisons, async cases, batches, CPU on one and on all
 cores, memory, and the raw data with your own plot.
+
+## AI use
+
+@mmutils/bench is developed with AI assistance: most of the code, tests
+and documentation was written with AI. The author designs the features,
+makes the decisions and reviews the changes, and every change passes the
+same checks (formatting, lint, strict type checking and tests) before it is
+committed.
 
 ## License
 

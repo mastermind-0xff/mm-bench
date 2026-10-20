@@ -1,6 +1,6 @@
 // Measured by the tests from the TypeScript sources: the workers run this
 // file, the test calls compare with the same cases.
-import { bench, compare } from 'mm-bench';
+import { bench, compare } from '@mmutils/bench';
 
 await compare(
   bench('target', () => Math.sqrt(2)),

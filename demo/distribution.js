@@ -5,7 +5,7 @@
  *
  * Run: node demo/distribution.js
  */
-import { bench } from 'mm-bench';
+import { bench } from '@mmutils/bench';
 
 const spin = (ns) => {
   const end = process.hrtime.bigint() + BigInt(ns);

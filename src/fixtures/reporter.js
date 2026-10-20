@@ -1,5 +1,5 @@
 // The built-in report, without colors.
-import { bench, compare, loggerReporter } from 'mm-bench';
+import { bench, compare, loggerReporter } from '@mmutils/bench';
 
 await compare(
   bench('fast', () => 1),

@@ -7,7 +7,7 @@
  *
  * Run: node demo/batch.js
  */
-import { bench, compare } from 'mm-bench';
+import { bench, compare } from '@mmutils/bench';
 
 const values = [3, 1, 4, 1, 5, 9, 2, 6];
 

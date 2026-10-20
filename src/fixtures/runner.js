@@ -1,7 +1,7 @@
 // Measured by runner.spec.ts through runSample: only the workers run this
 // file, one case each, never the main thread. The cases check what they
 // see in the worker, and fail the ways a worker can.
-import { bench, compare, isWorker } from 'mm-bench';
+import { bench, compare, isWorker } from '@mmutils/bench';
 
 const options = { file: import.meta.url, output: false };
 

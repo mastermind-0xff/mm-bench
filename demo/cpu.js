@@ -16,7 +16,7 @@
  */
 import { pbkdf2, pbkdf2Sync } from 'node:crypto';
 import { promisify } from 'node:util';
-import { bench, compare, DEFAULT_GRAPHS, loggerReporter } from 'mm-bench';
+import { bench, compare, DEFAULT_GRAPHS, loggerReporter } from '@mmutils/bench';
 
 const hash = promisify(pbkdf2);
 const args = /** @type {const} */ (['password', 'salt', 2500, 32, 'sha256']);
