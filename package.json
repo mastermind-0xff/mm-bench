@@ -1,7 +1,7 @@
 {
-  "name": "mm-bench",
+  "name": "@mmutils/bench",
   "version": "0.1.0",
-  "description": "Microbenchmarks with run time distributions: every call is timed in a fresh worker, with CPU and memory probes, and plotted side by side with mm-logger.",
+  "description": "Microbenchmarks with run time distributions: every call is timed in a fresh worker, with CPU and memory probes, and plotted side by side with @mmutils/logger.",
   "keywords": [
     "benchmark",
     "microbenchmark",
@@ -9,10 +9,19 @@
     "histogram",
     "distribution",
     "worker",
-    "typescript"
+    "typescript",
+    "mmutils"
   ],
   "author": "Tihomir Trifonov",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mastermind-0xff/mm-bench.git"
+  },
+  "homepage": "https://github.com/mastermind-0xff/mm-bench#readme",
+  "bugs": {
+    "url": "https://github.com/mastermind-0xff/mm-bench/issues"
+  },
   "type": "module",
   "main": "./dist/cjs/index.cjs",
   "module": "./dist/esm/index.js",
@@ -33,6 +42,9 @@
   "engines": {
     "node": ">=22"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "npm run clean && rollup -c && tsc -p tsconfig.build.json",
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
@@ -45,10 +57,11 @@
     "format:check": "prettier --check .",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm test",
     "prepublishOnly": "npm run check && npm run build",
-    "demo": "npm run build && node demo/compare.js"
+    "demo": "npm run build && node demo/compare.js",
+    "images": "node scripts/readme-images.js"
   },
   "dependencies": {
-    "mm-logger": "file:../mm-logger"
+    "@mmutils/logger": "^0.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -5,8 +5,8 @@
  *
  * Run: node demo/raw-data.js
  */
-import { Logger, graphPlugin, messagePlugin } from 'mm-logger';
-import { bench, distribution } from 'mm-bench';
+import { Logger, graphPlugin, messagePlugin } from '@mmutils/logger';
+import { bench, distribution } from '@mmutils/bench';
 
 const report = await bench('sort 100 numbers', () =>
   Array.from({ length: 100 }, (_, index) => (index * 7919) % 101).sort(

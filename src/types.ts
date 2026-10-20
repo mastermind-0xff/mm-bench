@@ -151,7 +151,7 @@ export interface CallSettings {
   readonly root?: string;
   /**
    * Where the report goes: `true` for `loggerReporter()` (bar graphs side by
-   * side, with mm-logger), `false` for nothing (the returned report has all
+   * side, with @mmutils/logger), `false` for nothing (the returned report has all
    * the data), or a custom `Reporter`. Default: `true`.
    */
   readonly output?: boolean | Reporter;

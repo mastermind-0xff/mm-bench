@@ -10,7 +10,13 @@ export default tseslint.config(
   js.configs.recommended,
   {
     // root scripts, configs, demos and test fixtures run in Node
-    files: ['*.js', 'demo/**/*.js', 'src/**/*.js', 'src/**/*.cjs'],
+    files: [
+      '*.js',
+      'demo/**/*.js',
+      'scripts/**/*.js',
+      'src/**/*.js',
+      'src/**/*.cjs',
+    ],
     languageOptions: { globals: globals.node },
   },
   {

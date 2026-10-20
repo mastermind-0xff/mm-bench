@@ -11,7 +11,7 @@ import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { setImmediate as nextTurn } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
-import { bench, compare } from 'mm-bench';
+import { bench, compare } from '@mmutils/bench';
 
 const file = fileURLToPath(new URL('../package.json', import.meta.url));
 

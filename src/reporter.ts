@@ -1,4 +1,4 @@
-import type { BakedStyles, GraphAxis, LoggerPlugin } from 'mm-logger';
+import type { BakedStyles, GraphAxis, LoggerPlugin } from '@mmutils/logger';
 import { distribution } from './distribution.js';
 import {
   escapeControls,
@@ -130,7 +130,7 @@ interface TextMethods {
   benchText(block: TextBlock): void;
 }
 
-type MmLogger = typeof import('mm-logger');
+type MmLogger = typeof import('@mmutils/logger');
 
 const fail = (name: string, expected: string, value: unknown): never => {
   throw new RangeError(
@@ -639,7 +639,7 @@ const layout = (cases: number, options: LoggerReporterOptions): Layout => {
 };
 
 /**
- * Prints progress and reports with mm-logger: a line per sample, then one
+ * Prints progress and reports with @mmutils/logger: a line per sample, then one
  * column per case with its stats and graphs, side by side. Axes and
  * ceilings are shared by the cases, so the graphs compare at a glance.
  *
@@ -690,7 +690,7 @@ export const loggerReporter: LoggerReporterFunction = (options = {}) => {
 
   const reporter: Reporter = {
     async start(next) {
-      loaded ??= await import('mm-logger');
+      loaded ??= await import('@mmutils/logger');
       plan = next;
       const { environment: env, cases } = next;
       const first = cases[0]?.options;
@@ -747,13 +747,13 @@ export const loggerReporter: LoggerReporterFunction = (options = {}) => {
 
     async end(report) {
       if (report.cases.length === 0) return;
-      const mm = (loaded ??= await import('mm-logger'));
+      const mm = (loaded ??= await import('@mmutils/logger'));
       const { columns, width } = layout(report.cases.length, options);
       const logger = createLogger(mm, { columns, width });
       const cols = width - 2;
       const small = Math.max(2, Math.round(rows / 3));
       // numbers in ns: the logger formats them, two units at most, e.g.
-      // `0s … 2s 496ms`
+      // `0ms … 2s 496ms`
       const axisOf = (duration: number): GraphAxis => ({
         start: 0,
         end: duration,

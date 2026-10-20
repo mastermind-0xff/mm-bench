@@ -4,7 +4,7 @@
  *
  * Run: node demo/compare.js
  */
-import { bench, compare } from 'mm-bench';
+import { bench, compare } from '@mmutils/bench';
 
 // prepared at the top level: the workers run this file again, so the cases
 // see the same data there

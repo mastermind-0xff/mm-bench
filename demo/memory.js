@@ -12,7 +12,7 @@
  *
  * Run: node demo/memory.js
  */
-import { bench, compare } from 'mm-bench';
+import { bench, compare } from '@mmutils/bench';
 
 const size = 1000;
 const reused = Array.from({ length: size }, () => ({ x: 0, y: 0 }));

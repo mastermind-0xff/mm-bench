@@ -1,5 +1,5 @@
 // CommonJS, without top-level await: calls chained with then.
-const { bench, compare } = require('mm-bench');
+const { bench, compare } = require('@mmutils/bench');
 
 const options = { runs: 100, samples: 2, warmup: { runs: 10 }, output: false };
 

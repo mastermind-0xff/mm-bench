@@ -1,5 +1,5 @@
 // Several calls in one file: each worker skips the calls before its own.
-import { bench, compare } from 'mm-bench';
+import { bench, compare } from '@mmutils/bench';
 
 const options = { runs: 100, samples: 2, warmup: { runs: 10 }, output: false };
 

@@ -1,5 +1,5 @@
 // A sync and an async case compared, the raw data summed up as JSON.
-import { bench, compare } from 'mm-bench';
+import { bench, compare } from '@mmutils/bench';
 
 const report = await compare(
   bench('sync', () => Math.sqrt(Math.random())),
